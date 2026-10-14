@@ -31,7 +31,7 @@ class GraphicsContextTest {
         Platform.runLater(() -> {
             try {
                 Canvas canvas = new Canvas(400, 300);
-                GraphicsContext gc = canvas.getGraphicsContext();
+                GraphicsContext gc = canvas.getGraphicsContext2D();
 
                 assertEquals(448, canvas.getImage().getWidth());
                 assertEquals(300, canvas.getImage().getHeight());

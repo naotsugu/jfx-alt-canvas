@@ -37,11 +37,11 @@ public class App extends Application {
 
             gc.setFont(Font.font("Consolas", 14));
             gc.setFill(Color.WHITE);
-            gc.fillText("Hello JavaFX Canvas フォント描画品質000", 100, 100);
+            gc.fillText("Hello JavaFX Canvas フォント描画", 100, 100);
         }
 
         {
-            var gc = canvas.getGraphicsContext();
+            var gc = canvas.getGraphicsContext2D();
             gc.setFill(Color.BLACK);
             gc.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -50,7 +50,7 @@ public class App extends Application {
 
             gc.setFont(Font.font("Consolas", 14));
             gc.setFill(Color.WHITE);
-            gc.fillText("Hello FFI Canvas フォント描画品質000", 100, 100);
+            gc.fillText("Hello FFI Canvas フォント描画", 100, 100);
         }
 
     }

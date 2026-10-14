@@ -51,7 +51,7 @@ public class Canvas extends ImageView {
         renderPulse.start();
     }
 
-    public GraphicsContext getGraphicsContext() {
+    public GraphicsContext getGraphicsContext2D() {
         return ctx;
     }
 
