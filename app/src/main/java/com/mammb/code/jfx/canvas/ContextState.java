@@ -66,7 +66,7 @@ class ContextState {
             0.0,
             defaultFont.getFamily(),
             defaultFont.getSize(),
-            700,
+            400,
             TextAlignment.LEFT,
             VPos.BASELINE,
             1.0,
@@ -82,7 +82,7 @@ class ContextState {
             copy.linecap,
             copy.linejoin,
             copy.miterLimit,
-            copy.lineDashes,
+            (copy.lineDashes == null) ? null : copy.lineDashes.clone(),
             copy.lineDashOffset,
             copy.fontFamily,
             copy.fontSize,
@@ -91,7 +91,7 @@ class ContextState {
             copy.textBaseline,
             copy.globalAlpha,
             copy.fillRule,
-            copy.transform,
+            new Affine(copy.transform), // Affine is mutable: copy it
             copy.blendMode);
     }
 

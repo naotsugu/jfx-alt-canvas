@@ -46,8 +46,8 @@ class RenderPulse extends AnimationTimer {
     @Override
     public void handle(long now) {
         if (dirty) {
-            render.run();
             dirty = false;
+            render.run();
         }
     }
 
