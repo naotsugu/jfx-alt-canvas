@@ -15,11 +15,16 @@
  */
 package com.mammb.code.jfx.canvas;
 
+import javafx.geometry.VPos;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.shape.FillRule;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.transform.Affine;
 
 /**
  * The ContextState.
@@ -32,9 +37,18 @@ class ContextState {
     double linewidth;
     StrokeLineCap linecap;
     StrokeLineJoin linejoin;
+    double miterLimit;
+    double[] lineDashes;
+    double lineDashOffset;
     String fontFamily;
     double fontSize;
     double fontWeight;
+    TextAlignment textAlign;
+    VPos textBaseline;
+    double globalAlpha;
+    FillRule fillRule;
+    Affine transform;
+    BlendMode blendMode;
 
     ContextState() {
         init();
@@ -47,9 +61,18 @@ class ContextState {
             1.0,
             StrokeLineCap.SQUARE,
             StrokeLineJoin.MITER,
+            10.0,
+            null,
+            0.0,
             defaultFont.getFamily(),
             defaultFont.getSize(),
-            700);
+            700,
+            TextAlignment.LEFT,
+            VPos.BASELINE,
+            1.0,
+            FillRule.NON_ZERO,
+            new Affine(),
+            BlendMode.SRC_OVER);
     }
 
     ContextState(ContextState copy) {
@@ -58,9 +81,18 @@ class ContextState {
             copy.linewidth,
             copy.linecap,
             copy.linejoin,
+            copy.miterLimit,
+            copy.lineDashes,
+            copy.lineDashOffset,
             copy.fontFamily,
             copy.fontSize,
-            copy.fontWeight);
+            copy.fontWeight,
+            copy.textAlign,
+            copy.textBaseline,
+            copy.globalAlpha,
+            copy.fillRule,
+            copy.transform,
+            copy.blendMode);
     }
 
     final void set(
@@ -69,17 +101,35 @@ class ContextState {
             double linewidth,
             StrokeLineCap linecap,
             StrokeLineJoin linejoin,
+            double miterLimit,
+            double[] lineDashes,
+            double lineDashOffset,
             String fontFamily,
             double fontSize,
-            double fontWeight) {
+            double fontWeight,
+            TextAlignment textAlign,
+            VPos textBaseline,
+            double globalAlpha,
+            FillRule fillRule,
+            Affine transform,
+            BlendMode blendMode) {
         this.fill = fill;
         this.stroke = stroke;
         this.linewidth = linewidth;
         this.linecap = linecap;
         this.linejoin = linejoin;
+        this.miterLimit = miterLimit;
+        this.lineDashes = lineDashes;
+        this.lineDashOffset = lineDashOffset;
         this.fontFamily = fontFamily;
         this.fontSize = fontSize;
         this.fontWeight = fontWeight;
+        this.textAlign = textAlign;
+        this.textBaseline = textBaseline;
+        this.globalAlpha = globalAlpha;
+        this.fillRule = fillRule;
+        this.transform = transform;
+        this.blendMode = blendMode;
     }
 
     ContextState copy() {
@@ -92,8 +142,17 @@ class ContextState {
         ctx.setLineWidth(linewidth);
         ctx.setLineCap(linecap);
         ctx.setLineJoin(linejoin);
+        ctx.setMiterLimit(miterLimit);
+        ctx.setLineDashes(lineDashes);
+        ctx.setLineDashOffset(lineDashOffset);
         ctx.setFontSize(fontSize);
         ctx.setFontWeight(fontWeight);
+        ctx.setTextAlign(textAlign);
+        ctx.setTextBaseline(textBaseline);
+        ctx.setGlobalAlpha(globalAlpha);
+        ctx.setFillRule(fillRule);
+        ctx.setTransform(transform);
+        //ctx.setBlendMode(blendMode);
     }
 
 }
