@@ -83,15 +83,22 @@ public class GraphicsContext implements AutoCloseable {
     GraphicsContext(Canvas canvas, int width, int height) {
 
         theCanvas = canvas;
-        sceneWidth = alignWidth(width);
-        sceneHeight = height;
-
-        ctxSegment = lib_h.create_render_context(sceneWidth, sceneHeight);
-        cleanable = nativeGlobal.cleaner(this, ctxSegment, arena);
-        initSceneBuffer();
-
+        sceneWidth = alignWidth(Math.max(1, width));
+        sceneHeight = Math.max(1, height);
         curState = new ContextState();
         stateStack = new LinkedList<>();
+        ctxSegment = lib_h.create_render_context(sceneWidth, sceneHeight);
+        if (ctxSegment.address() == 0) {
+            throw new IllegalStateException("failed to create native render context");
+        }
+        try {
+            cleanable = nativeGlobal.cleaner(this, ctxSegment, arena);
+            initSceneBuffer();
+        } catch (RuntimeException | Error e) {
+            lib_h.destroy_render_context(ctxSegment);
+            arena.close();
+            throw e;
+        }
     }
 
     public Canvas getCanvas() {
@@ -118,7 +125,8 @@ public class GraphicsContext implements AutoCloseable {
     }
 
     private void initSceneBuffer() {
-        sceneSegment = arena.allocate((long) sceneWidth * sceneHeight * 4); // 4bytes[BGRA]
+        long size = (long) sceneWidth * sceneHeight * 4;
+        sceneSegment = Arena.ofAuto().allocate(size, 64);
         pixelBuffer = new PixelBuffer<>(
             sceneWidth, sceneHeight,
             sceneSegment.asByteBuffer(),
@@ -129,7 +137,8 @@ public class GraphicsContext implements AutoCloseable {
     void render() {
         if (!closed) {
             try {
-                lib_h.render(ctxSegment, sceneSegment);
+                boolean ok = lib_h.render(ctxSegment, sceneSegment, sceneSegment.byteSize());
+                if (!ok) return;
                 pixelBuffer.updateBuffer(_ -> null);
             } finally {
                 Reference.reachabilityFence(this);

@@ -314,14 +314,17 @@ pub extern "C" fn destroy_render_context(ctx_ptr: *mut RenderContext) {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn render(ctx_ptr: *mut RenderContext, buffer: *mut u8) {
+pub extern "C" fn render(ctx_ptr: *mut RenderContext, buffer: *mut u8, buffer_len: usize) -> bool {
 
     if ctx_ptr.is_null() || buffer.is_null() {
-        return;
+        return false;
     }
 
     // restore the reference from the raw pointer (without taking ownership)
     let ctx = unsafe { &mut *ctx_ptr };
+
+    let required = row_bytes(ctx.width) as usize * ctx.height as usize;
+    if buffer_len < required { ctx.scene.reset(); return false; }
 
     // the scene must be balanced: close the clip layers that are still open.
     // They are opened again lazily by the next draw call.
@@ -399,6 +402,7 @@ pub extern "C" fn render(ctx_ptr: *mut RenderContext, buffer: *mut u8) {
     drop(mapped_data);
     readback_buffer.unmap();
     ctx.scene.reset();
+    true
 }
 
 /// Resizes the canvas. The size must be non-zero and within the device limits.
