@@ -2,6 +2,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::slice;
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::ffi::{c_char, CStr};
 use std::sync::{Arc, LazyLock, Mutex, MutexGuard};
 use vello::{kurbo::{Affine, Arc as KArc, BezPath, Join, Cap, Rect, Stroke, Ellipse, RoundedRect,
@@ -1570,4 +1571,15 @@ fn create_render_target(device: &wgpu::Device, width: u32, height: u32)
     });
 
     (texture, readback_buffer)
+}
+
+/// Runs f; a panic is logged and turned into `default` instead of aborting the JVM.
+fn guard<T>(default: T, f: impl FnOnce() -> T) -> T {
+    catch_unwind(AssertUnwindSafe(f)).unwrap_or_else(|payload| {
+        let msg = payload.downcast_ref::<&str>().map(|s| s.to_string())
+            .or_else(|| payload.downcast_ref::<String>().cloned())
+            .unwrap_or_else(|| "unknown panic".into());
+        eprintln!("[native] panic caught at FFI boundary: {msg}");
+        default
+    })
 }
