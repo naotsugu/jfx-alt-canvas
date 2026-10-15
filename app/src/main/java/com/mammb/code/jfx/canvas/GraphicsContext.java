@@ -154,7 +154,7 @@ public class GraphicsContext implements AutoCloseable {
      * @param h the height of the rectangle.
      */
     public void strokeRect(double x, double y, double w, double h) {
-        if (w != 0 || h != 0 && !closed) {
+        if ((w != 0 || h != 0) && !closed) {
             lib_h.stroke_rect(ctxSegment, x, y, w, h);
             theCanvas.getRenderPulse().request();
         }
@@ -168,7 +168,7 @@ public class GraphicsContext implements AutoCloseable {
      * @param h the height at the center of the oval.
      */
     public void fillOval(double x, double y, double w, double h) {
-        if (w != 0 || h != 0 && !closed) {
+        if ((w != 0 || h != 0) && !closed) {
             lib_h.fill_oval(ctxSegment, x, y, w, h);
             theCanvas.getRenderPulse().request();
         }
@@ -182,7 +182,7 @@ public class GraphicsContext implements AutoCloseable {
      * @param h the height at the center of the oval.
      */
     public void strokeOval(double x, double y, double w, double h) {
-        if (w != 0 || h != 0 && !closed) {
+        if ((w != 0 || h != 0) && !closed) {
             lib_h.stroke_oval(ctxSegment, x, y, w, h);
             theCanvas.getRenderPulse().request();
         }
@@ -240,7 +240,7 @@ public class GraphicsContext implements AutoCloseable {
      * @param nPoints the number of points that make the polygon.
      */
     public void fillPolygon(double[] xPoints, double[] yPoints, int nPoints) {
-        if (nPoints >= 3 && !closed) {
+        if (xPoints != null && yPoints != null && nPoints >= 3 && !closed) {
             try (var localArena = Arena.ofConfined()) {
                 lib_h.fill_polygon(ctxSegment,
                         localArena.allocateFrom(ValueLayout.JAVA_DOUBLE, xPoints),
@@ -259,7 +259,7 @@ public class GraphicsContext implements AutoCloseable {
      * @param nPoints the number of points that make the polygon.
      */
     public void strokePolygon(double[] xPoints, double[] yPoints, int nPoints) {
-        if (nPoints >= 2 && !closed) {
+        if (xPoints != null && yPoints != null && nPoints >= 2 && !closed) {
             try (var localArena = Arena.ofConfined()) {
                 lib_h.stroke_polygon(ctxSegment,
                         localArena.allocateFrom(ValueLayout.JAVA_DOUBLE, xPoints),
@@ -279,7 +279,7 @@ public class GraphicsContext implements AutoCloseable {
      * @param nPoints the number of points that make the polyline.
      */
     public void strokePolyline(double[] xPoints, double[] yPoints, int nPoints) {
-        if (nPoints >= 2 && !closed) {
+        if (xPoints != null && yPoints != null && nPoints >= 2 && !closed) {
             try (var localArena = Arena.ofConfined()) {
                 lib_h.stroke_polyline(ctxSegment,
                         localArena.allocateFrom(ValueLayout.JAVA_DOUBLE, xPoints),
@@ -339,7 +339,7 @@ public class GraphicsContext implements AutoCloseable {
     public Point2D fillText(String text, double x, double y, double maxWidth) {
         if (maxWidth <= 0 && !closed) return new Point2D(x, y);
         try (var localArena = Arena.ofConfined()) {
-            MemorySegment end = lib_h.stroke_text_max_width(
+            MemorySegment end = lib_h.fill_text_max_width(
                     localArena, ctxSegment, localArena.allocateFrom(text), x, y, maxWidth);
             theCanvas.getRenderPulse().request();
             return new Point2D(Point.x(end), Point.y(end));
@@ -459,6 +459,7 @@ public class GraphicsContext implements AutoCloseable {
      */
     public void setLineCap(StrokeLineCap cap) {
         if (cap != null && curState.linecap != cap && !closed) {
+            curState.linecap = cap;
             lib_h.set_line_cap(ctxSegment, switch (cap) {
                 case SQUARE -> 2; case ROUND -> 1; case BUTT -> 0;
             });
@@ -499,11 +500,13 @@ public class GraphicsContext implements AutoCloseable {
 
     public List<String> loadFont(Path path) {
         try (Arena arena = Arena.ofConfined()) {
-            MemorySegment name = arena.allocate(256);
+            MemorySegment name = arena.allocate(1024);
             int faces = lib_h.load_font_file(
                     arena.allocateFrom(path.toAbsolutePath().toString()),
                     name, name.byteSize());
-            return IntStream.range(0, faces).mapToObj(name::getString).toList();
+            if (faces == 0) return List.of();
+            //return IntStream.range(0, faces).mapToObj(name::getString).toList();
+            return List.of(name.getString(0).split("\n"));
         }
     }
 
